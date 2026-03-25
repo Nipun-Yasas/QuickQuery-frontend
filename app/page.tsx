@@ -8,6 +8,8 @@ import { HowItWorks } from "./components/landing/HowItWorks";
 import { Footer } from "./components/landing/Footer";
 import { Navigation } from "./components/landing/Navigation";
 import Antigravity from "./components/landing/Antigravity";
+import QuickQuery from "./QuickQuery";
+import { Show,UserAvatar } from '@clerk/nextjs'
 
 
 export default function Home() {
@@ -24,8 +26,14 @@ export default function Home() {
 
   return (
     <div className="">
-      <Navigation />
-      <Antigravity
+
+      <Show when="signed-in">
+        <QuickQuery/>
+      </Show>
+
+      <Show when="signed-out">
+        <Navigation />
+        <Antigravity
         count={isMobile ? 100 : 300}
         magnetRadius={6}
         ringRadius={isMobile ? 1 : 7}
@@ -56,6 +64,10 @@ export default function Home() {
       <Testimonial />
       <HowItWorks />
       <Footer />
+      </Show>
+
+      
+      
     </div>
   );
 }
