@@ -7,30 +7,21 @@ import {
   useMotionValueEvent,
   useScroll,
 } from "motion/react";
-import { useTheme } from "next-themes";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "../Button";
 import { ThemeToggle } from "../ThemeToggle";
 import {
-  ClerkProvider,
   Show,
   SignInButton,
   SignUpButton,
   UserButton,
 } from "@clerk/nextjs";
 
-const navItems = [
-  { name: "Home", href: "/" },
-  { name: "Dashboard", href: "/dashboard" },
-];
-
 export const Navigation = () => {
   const [isScrolled, setIsScrolled] = useState(false);
-  const router = useRouter(); // Initialize router
   const { scrollY } = useScroll();
-  const { setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -86,7 +77,7 @@ export const Navigation = () => {
             isMobile
               ? { backgroundColor: "rgba(0, 0, 0, 0)", width: "95%" }
               : {
-                  width: isScrolled ? "fit-content" : "1000px",
+                  width: "1000px",
                   backgroundColor: isScrolled
                     ? "var(--background-secondary)"
                     : "rgba(0, 0, 0, 0)",
@@ -104,41 +95,6 @@ export const Navigation = () => {
           >
             QuickQuery
           </Link>
-          <ul className="hidden font-light gap-6 text-sm sm:flex whitespace-nowrap px-16">
-            {navItems.map((item) => {
-              const href = getLinkHref(item);
-              const isActive = pathname === href;
-              return (
-                <li
-                  key={item.name}
-                  className="group relative flex items-center"
-                >
-                  {isActive && (
-                    <motion.span
-                      layoutId="activeNav"
-                      className="absolute -left-3 h-1.5 w-1.5 rounded-full bg-primary"
-                      transition={{ duration: 0.3 }}
-                    />
-                  )}
-                  <Link
-                    className={`text-textPrimary ${
-                      isActive ? "font-semibold" : ""
-                    }`}
-                    href={href}
-                  >
-                    <span className="relative inline-flex overflow-hidden">
-                      <div className="translate-y-0 skew-y-0 transform-gpu transition-transform duration-500 group-hover:-translate-y-[150%] group-hover:skew-y-12">
-                        {item.name}
-                      </div>
-                      <div className="absolute translate-y-[150%] skew-y-12 transform-gpu transition-transform duration-500 group-hover:translate-y-0 group-hover:skew-y-0">
-                        {item.name}
-                      </div>
-                    </span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
 
           <div className="flex items-center justify-center gap-4">
             <div className="hidden sm:flex gap-4">
@@ -182,7 +138,8 @@ export const Navigation = () => {
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
               className="fixed right-0 top-0 bottom-0 z-[1002] w-64 bg-backgroundSecondary border-l border-borderPrimary p-6 sm:hidden flex flex-col gap-6"
             >
-              <div className="flex items-center justify-end">
+              <div className="flex items-center justify-between">
+                <p>QuickQuery</p>
                 <button
                   onClick={() => setMobileMenuOpen(false)}
                   className="p-2 text-textPrimary hover:bg-hoverPrimary rounded-full"
@@ -190,27 +147,6 @@ export const Navigation = () => {
                   <X size={24} />
                 </button>
               </div>
-
-              <ul className="flex flex-col gap-4">
-                {navItems.map((item) => {
-                  const href = getLinkHref(item);
-                  return (
-                    <li key={item.name}>
-                      <Link
-                        href={href}
-                        onClick={() => setMobileMenuOpen(false)}
-                        className={`block text-md ${
-                          pathname === href
-                            ? "text-primary"
-                            : "text-textPrimary"
-                        }`}
-                      >
-                        {item.name}
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
 
               <div className="mt-6 flex flex-col gap-4">
                 <Show when="signed-out">

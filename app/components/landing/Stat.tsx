@@ -1,9 +1,71 @@
+"use client";
+
 import { useId, useState, useEffect } from "react";
 import { FileText, MessageCircle, Users, Languages } from "lucide-react";
 
 import CountUp from "./CountUp";
 
+interface PlatformStats {
+  documents_processed: number;
+  questions_answered: number;
+  active_users: number;
+}
+
+// Gemini 2.5 Flash supports 100+ languages — hardcoded per model spec.
+const LANGUAGES_SUPPORTED = 100;
+
 export function Stat() {
+  const [platformStats, setPlatformStats] = useState<PlatformStats | null>(
+    null
+  );
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/stats`
+        );
+        if (!res.ok) throw new Error("Failed to fetch stats");
+        const data = await res.json();
+        setPlatformStats(data);
+      } catch (err) {
+        console.error("Could not load platform stats:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
+  const stats = [
+    {
+      value: platformStats?.documents_processed ?? 0,
+      suffix: "+",
+      description: "Documents processed",
+      icon: <FileText className="w-8 h-8" />,
+    },
+    {
+      value: platformStats?.questions_answered ?? 0,
+      suffix: "+",
+      description: "Questions answered",
+      icon: <MessageCircle className="w-8 h-8" />,
+    },
+    {
+      value: platformStats?.active_users ?? 0,
+      suffix: "+",
+      description: "Active users worldwide",
+      icon: <Users className="w-8 h-8" />,
+    },
+    {
+      value: LANGUAGES_SUPPORTED,
+      suffix: "+",
+      description: "Languages supported",
+      icon: <Languages className="w-8 h-8" />,
+    },
+  ];
+
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-10 md:gap-2 pb-12 pt-0 sm:pt-0 md:pt-4 lg:pt-12 px-4 sm:px-6 md:px-12 lg:px-12 w-full max-w-7xl mx-auto">
       {stats.map((feature, idx) => (
@@ -15,17 +77,24 @@ export function Stat() {
           <div className="relative z-20 mb-4 text-textPrimary">
             {feature.icon}
           </div>
-          <div className="text-3xl font-bold text-textPrimary relative z-20 flex items-center">
-            <CountUp
-              from={0}
-              to={feature.value}
-              separator=","
-              direction="up"
-              duration={1}
-              className="count-up-text"
-            />
-            {feature.suffix}
-          </div>
+
+          {loading && idx < 3 ? (
+            /* Skeleton loader for the three live stats */
+            <div className="relative z-20 h-9 w-24 rounded-lg bg-neutral-200 dark:bg-neutral-800 animate-pulse" />
+          ) : (
+            <div className="text-3xl font-bold text-textPrimary relative z-20 flex items-center">
+              <CountUp
+                from={0}
+                to={feature.value}
+                separator=","
+                direction="up"
+                duration={1}
+                className="count-up-text"
+              />
+              {feature.suffix}
+            </div>
+          )}
+
           <p className="text-textPrimary mt-2 text-base font-normal relative z-20 text-center">
             {feature.description}
           </p>
@@ -34,37 +103,6 @@ export function Stat() {
     </div>
   );
 }
-
-const stats = [
-  {
-    title: "50,000+",
-    value: 50000,
-    suffix: "+",
-    description: "Documents processed",
-    icon: <FileText className="w-8 h-8" />,
-  },
-  {
-    title: "1,000,000+",
-    value: 1000,
-    suffix: "k+",
-    description: "Questions answered",
-    icon: <MessageCircle className="w-8 h-8" />,
-  },
-  {
-    title: "10,000+",
-    value: 10000,
-    suffix: "+",
-    description: "Active users worldwide",
-    icon: <Users className="w-8 h-8" />,
-  },
-  {
-    title: "50+",
-    value: 50,
-    suffix: "+",
-    description: "Languages supported",
-    icon: <Languages className="w-8 h-8" />,
-  },
-];
 
 export const Grid = ({
   pattern,

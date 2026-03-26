@@ -8,12 +8,19 @@ import { HowItWorks } from "./components/landing/HowItWorks";
 import { Footer } from "./components/landing/Footer";
 import { Navigation } from "./components/landing/Navigation";
 import Antigravity from "./components/landing/Antigravity";
-import QuickQuery from "./QuickQuery";
-import { Show,UserAvatar } from '@clerk/nextjs'
-
+import { useAuth } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
   const [width, setWidth] = useState(1200);
+  const { isSignedIn, isLoaded } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isLoaded && isSignedIn) {
+      router.replace("/quickquery");
+    }
+  }, [isLoaded, isSignedIn, router]);
 
   useEffect(() => {
     const handleResize = () => setWidth(window.innerWidth);
@@ -24,16 +31,14 @@ export default function Home() {
 
   const isMobile = width < 768;
 
+  // Don't render the landing page until Clerk has loaded,
+  // and skip it entirely if the user is already signed in (redirect is in progress).
+  if (!isLoaded || isSignedIn) return null;
+
   return (
     <div className="">
-
-      <Show when="signed-in">
-        <QuickQuery/>
-      </Show>
-
-      <Show when="signed-out">
-        <Navigation />
-        <Antigravity
+      <Navigation />
+      <Antigravity
         count={isMobile ? 100 : 300}
         magnetRadius={6}
         ringRadius={isMobile ? 1 : 7}
@@ -64,10 +69,6 @@ export default function Home() {
       <Testimonial />
       <HowItWorks />
       <Footer />
-      </Show>
-
-      
-      
     </div>
   );
 }
